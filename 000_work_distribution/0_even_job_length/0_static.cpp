@@ -15,7 +15,7 @@ int main() {
   std::mt19937 mt(rd());
 
   // Create 1 distribution
-  std::uniform_int_distribution bin(26, 27);
+  std::uniform_int_distribution bin(20, 30);
 
   // Calculate the number elements per bin
   int num_work_items = 1 << 18;
