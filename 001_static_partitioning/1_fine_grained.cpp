@@ -37,7 +37,7 @@ int main() {
                   [&] { return bin_4(mt); });
 
 
-  // Calculate the number of items per thread (assume this equally divides)
+  // Number of threads to spawn
   int num_threads = 8;
   
   // Create a lambda to process the work items
