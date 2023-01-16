@@ -21,21 +21,32 @@ int main() {
   std::uniform_int_distribution bin_3(51, 75);
   std::uniform_int_distribution bin_4(76, 100);
 
-  // Calculate the number elements per bin
+  // Number of elements to process
   int num_work_items = 1 << 18;
-  int n_bins = 4;
-  int elements_per_bin = num_work_items / n_bins;
+  
+  // Number of threads to spawn
+  int num_threads = 8;
 
   // Create work items
   std::vector<int> work_items;
-  std::generate_n(std::back_inserter(work_items), elements_per_bin,
-                  [&] { return bin_1(mt); });
-  std::generate_n(std::back_inserter(work_items), elements_per_bin,
-                  [&] { return bin_2(mt); });
-  std::generate_n(std::back_inserter(work_items), elements_per_bin,
-                  [&] { return bin_3(mt); });
-  std::generate_n(std::back_inserter(work_items), elements_per_bin,
-                  [&] { return bin_4(mt); });
+  work_items.reserve(num_work_items);
+  for(int i = 0; i < num_work_items; i+= num_threads) {
+      // Threads 0/1 get all the data from bin 1
+      work_items.push_back(bin_1(mt));
+      work_items.push_back(bin_1(mt));
+
+      // Threads 2/3 get all the data from bin 2
+      work_items.push_back(bin_2(mt));
+      work_items.push_back(bin_2(mt));
+
+      // Threads 4/5 get all the data from bin 3
+      work_items.push_back(bin_3(mt));
+      work_items.push_back(bin_3(mt));
+      
+      // Threads 6/7 get all the data from bin 4
+      work_items.push_back(bin_4(mt));
+      work_items.push_back(bin_4(mt));
+  }
 
   // Create an atomic to keep track of the next work item
   std::atomic<int> index = 0;
@@ -47,9 +58,6 @@ int main() {
       }
   };
 
-  // Number of threads to spawn
-  int num_threads = 8;
-  
   // Spawn threads (join in destructor of jthread)
   std::vector<std::jthread> threads;
   for(int i = 0; i < num_threads; i++) {
