@@ -1,4 +1,4 @@
-// A serial execution benchmark
+// A direct sharing benchmark
 // By: Nick from CoffeeBeforeArch
 
 #include <atomic>
