@@ -14,7 +14,7 @@
 
 int main() {
   // Number of iterations
-  const int num_iterations = 1 << 20;
+  const int num_iterations = 1 << 25;
 
   // Number of threads and iterations per thread
   const int num_threads = 8;
