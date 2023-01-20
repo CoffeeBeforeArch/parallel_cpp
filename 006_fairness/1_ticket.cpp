@@ -2,6 +2,7 @@
 // By: Nick from CoffeeBeforeArch
 
 #include <emmintrin.h>
+
 #include <algorithm>
 #include <array>
 #include <chrono>
@@ -83,7 +84,7 @@ int main() {
   for (auto &thread : threads) {
     thread.join();
   }
-  
+
   // Print out the max wait times
   for (auto max : max_wait_time) {
     std::cout << max << ' ';

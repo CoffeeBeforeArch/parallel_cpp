@@ -35,7 +35,7 @@ int main() {
       auto start = std::chrono::system_clock::now();
       pthread_spin_lock(&spinlock);
       auto stop = std::chrono::system_clock::now();
-      
+
       // Unlock the thread
       pthread_spin_unlock(&spinlock);
 
