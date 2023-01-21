@@ -3,15 +3,12 @@
 
 #include <emmintrin.h>
 
-#include <algorithm>
 #include <array>
 #include <chrono>
 #include <cstdint>
 #include <iostream>
-#include <list>
-#include <mutex>
-#include <random>
 #include <thread>
+#include <vector>
 
 // Ticket Spinlock
 class Spinlock {
@@ -65,12 +62,15 @@ int main() {
       auto stop = std::chrono::system_clock::now();
       spinlock.unlock();
 
+      // Calculate how long in took to get the lock
       int diff =
           std::chrono::duration_cast<std::chrono::microseconds>(stop - start)
               .count();
 
+      // Save the current max
       max = std::max(max, diff);
     }
+    // Save the final max value
     max_wait_time[tid] = max;
   };
 

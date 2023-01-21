@@ -7,10 +7,8 @@
 #include <array>
 #include <chrono>
 #include <iostream>
-#include <list>
-#include <mutex>
-#include <random>
 #include <thread>
+#include <vector>
 
 int main() {
   // Number of iterations
@@ -53,7 +51,7 @@ int main() {
   };
 
   // Spawn threads
-  std::vector<std::jthread> threads;
+  std::vector<std::thread> threads;
   for (int i = 0; i < num_threads; i++) {
     threads.emplace_back(work, i);
   }
