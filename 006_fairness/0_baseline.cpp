@@ -12,11 +12,10 @@
 
 int main() {
   // Number of iterations
-  const int num_iterations = 1 << 25;
+  const int num_iterations = 1 << 22;
 
   // Number of threads and iterations per thread
   const int num_threads = 8;
-  const int iterations_per_thread = num_iterations / num_threads;
 
   // Keep track of per-thread average wait time
   std::array<int, 8> max_wait_time;
@@ -28,7 +27,7 @@ int main() {
   // Function that removes items from the list in parallel
   auto work = [&](int tid) {
     int max = 0;
-    for (int i = 0; i < iterations_per_thread; i++) {
+    for (int i = 0; i < num_iterations; i++) {
       // Time how long it takes to get the lock
       auto start = std::chrono::system_clock::now();
       pthread_spin_lock(&spinlock);
