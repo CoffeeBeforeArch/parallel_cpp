@@ -1,4 +1,4 @@
-// A simple example using a concurrent queue
+// A baseline example using locks
 // By: Nick from CoffeeBeforeArch
 
 #include <mutex>
