@@ -24,8 +24,8 @@ int main() {
       int expected = sink.load();
       do {
         // Update the current desired value
+        if (expected == iterations) return;
         desired = expected + 1;
-        if (desired > iterations) return;
         // Try CAS until successful
       } while (!sink.compare_exchange_strong(expected, desired));
     }
@@ -39,8 +39,8 @@ int main() {
       int expected = sink.load();
       do {
         // Update the current desired value
+        if (expected == iterations) return;
         desired = expected + 1;
-        if (desired > iterations) return;
         // Try CAS until successful
       } while (!sink.compare_exchange_strong(expected, desired));
       std::this_thread::sleep_for(std::chrono::microseconds(1));
