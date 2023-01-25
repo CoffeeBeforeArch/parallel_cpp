@@ -25,7 +25,6 @@ int main() {
       int expected = sink.load();
       do {
         // Update the current desired value
-        if (expected == iterations) return;
         desired = expected + 1;
         // Try CAS until successful
       } while (!sink.compare_exchange_strong(expected, desired));
