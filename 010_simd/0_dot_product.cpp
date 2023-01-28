@@ -32,6 +32,6 @@ static void dp_bench(benchmark::State &s) {
                                   v2.begin(), 0);
   }
 }
-BENCHMARK(dp_bench);
+BENCHMARK(dp_bench)->Unit(benchmark::kMicrosecond);
 
 BENCHMARK_MAIN();
