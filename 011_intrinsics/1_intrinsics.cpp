@@ -7,25 +7,24 @@
 #include <cstdlib>
 #include <cstring>
 #include <random>
-#include <vector>
 
 // Hand-tuned dot product
 float dot_product(const __m256 *v1, const __m256 *v2,
                   size_t num_packed_elements) {
   auto tmp = 0.0f;
   for (size_t i = 0; i < num_packed_elements; i++) {
-    // Temporary variables to help with intrinsic
-    float r[8];
-    __m256 rv;
+    // Array to unpack __m256 result into
+    float unpacked[8];
+    __m256 result;
 
     // Our dot product intrinsic
-    rv = _mm256_dp_ps(v1[i], v2[i], 0xf1);
+    result = _mm256_dp_ps(v1[i], v2[i], 0xf1);
 
     // Extract __m256 into array of floats
-    std::memcpy(r, &rv, sizeof(float) * 8);
+    std::memcpy(unpacked, &result, sizeof(float) * 8);
 
     // Perform the final add
-    tmp += r[0] + r[4];
+    tmp += unpacked[0] + unpacked[4];
   }
   return tmp;
 }

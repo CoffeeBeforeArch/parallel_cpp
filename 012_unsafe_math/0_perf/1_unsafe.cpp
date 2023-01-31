@@ -2,7 +2,6 @@
 // By: Nick from CoffeeBeforeArch
 
 #include <benchmark/benchmark.h>
-#include <immintrin.h>
 
 #include <algorithm>
 #include <execution>
