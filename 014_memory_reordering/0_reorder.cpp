@@ -2,23 +2,22 @@
 // By: Nick from CoffeeBeforeArch
 
 #include <cassert>
-#include <cstdio>
 #include <iostream>
 #include <semaphore>
 #include <thread>
 
 void reorder(std::binary_semaphore &start, std::counting_semaphore<2> &end,
-             int &v1, int &v2, int &rec) {
+             int &write, int &read, int &reg) {
   // Keep going forever
   while (true) {
     // Wait for the signal to start
     start.acquire();
 
     // Write to v2
-    v1 = 1;
+    write = 1;
 
     // Read v1
-    rec = v2;
+    reg = read;
 
     // Say we're done for this iteration
     end.release();
@@ -32,19 +31,19 @@ int main() {
   std::counting_semaphore<2> done(0);
 
   // Variable for memory re-ordering
-  int v1 = 0;
-  int v2 = 0;
+  int x = 0;
+  int y = 0;
   int r1 = 0;
   int r2 = 0;
 
   // Start threads
-  std::thread t1([&] { reorder(start_t0, done, v1, v2, r1); });
-  std::thread t2([&] { reorder(start_t1, done, v2, v1, r2); });
+  std::thread t1([&] { reorder(start_t0, done, x, y, r1); });
+  std::thread t2([&] { reorder(start_t1, done, y, x, r2); });
 
   for (int i = 0;; i++) {
-    // Zero v1/v2 each iteration
-    v1 = 0;
-    v2 = 0;
+    // Zero x/y each iteration
+    x = 0;
+    y = 0;
 
     // Allow threads to continue
     start_t0.release();

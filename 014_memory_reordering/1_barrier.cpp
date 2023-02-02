@@ -4,26 +4,25 @@
 #include <emmintrin.h>
 
 #include <cassert>
-#include <cstdio>
 #include <iostream>
 #include <semaphore>
 #include <thread>
 
 void reorder(std::binary_semaphore &start, std::counting_semaphore<2> &end,
-             int &v1, int &v2, int &rec) {
+             int &write, int &read, int &reg) {
   // Keep going forever
   while (true) {
     // Wait for the signal to start
     start.acquire();
 
     // Write to v2
-    v1 = 1;
+    write = 1;
 
     // Barrier to prevent hardware memory reordering!
     _mm_mfence();
 
     // Read v1
-    rec = v2;
+    reg = read;
 
     // Say we're done for this iteration
     end.release();
