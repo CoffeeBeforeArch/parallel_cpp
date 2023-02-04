@@ -1,4 +1,4 @@
-// An example with an OpenMP critical section
+// An example with an OpenMP atomic
 // By: Nick from CoffeeBeforeArch
 
 #include <cassert>
