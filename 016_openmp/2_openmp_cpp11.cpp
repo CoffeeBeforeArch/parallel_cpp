@@ -24,7 +24,7 @@ static void baseline(benchmark::State &s) {
   // Timing loop
   for (auto _ : s) {
     // Parallelize the for loop
-    #pragma omp parallel for
+    [[ omp::sequence(directive(parallel), directive(for)) ]]
     for (int i = 0; i < num_elements; i++) {
       // Square v_in and set v_out
       v_out[i] = v_in[i] * v_in[i];

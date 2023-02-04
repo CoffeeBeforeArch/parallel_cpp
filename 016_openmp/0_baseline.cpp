@@ -1,3 +1,6 @@
+// Our baseline example
+// By: Nick from CoffeeBeforeArch
+
 #include <benchmark/benchmark.h>
 
 #include <random>
@@ -11,7 +14,7 @@ static void baseline(benchmark::State &s) {
 
   // Create vectors of random numbers
   const int num_elements = 1 << 20;
-  std::vector<float> v_in(num_elements);
+  std::vector<float> v_in;
   std::generate_n(std::back_inserter(v_in), num_elements,
                   [&] { return dist(mt); });
 

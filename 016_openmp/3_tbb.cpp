@@ -1,3 +1,6 @@
+// An example parallelized using TBB directly
+// By: Nick from CoffeeBeforeArch
+
 #include <benchmark/benchmark.h>
 #include <tbb/parallel_for.h>
 
@@ -13,7 +16,7 @@ static void baseline(benchmark::State &s) {
 
   // Create vectors of random numbers
   const int num_elements = 1 << 20;
-  std::vector<float> v_in(num_elements);
+  std::vector<float> v_in;
   std::generate_n(std::back_inserter(v_in), num_elements,
                   [&] { return dist(mt); });
 
