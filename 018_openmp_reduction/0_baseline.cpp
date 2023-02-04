@@ -14,18 +14,18 @@ static void baseline(benchmark::State &s) {
 
   // Create vectors of random numbers
   const int num_elements = 1 << 20;
-  std::vector<float> v_in(num_elements, 1);
-
-  // Accumulate the results
-  float sink = 0;
+  std::vector<float> v_in;
+  std::generate_n(std::back_inserter(v_in), num_elements, [&]{return dist(mt);});
 
   // Timing loop
   for (auto _ : s) {
-  // Parallelize the for loop
+    // Create our variable to accumulate into
+    float sink = 0;
+    
+    // Run the sum of squares
     for (int i = 0; i < num_elements; i++) {
-      // Square v_in and set v_out
-      sink += v_in[i] * v_in[i];
-      benchmark::DoNotOptimize(sink);
+      // Square v_in and add to sink
+      benchmark::DoNotOptimize(sink += v_in[i] * v_in[i]);
     }
   }
 }
