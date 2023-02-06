@@ -1,4 +1,4 @@
-// Parallel gaussian elimination
+// Parallel gaussian elimination with single
 // By: Nick from CoffeeBeforeArch
 
 #include <benchmark/benchmark.h>
@@ -29,8 +29,8 @@ static void baseline(benchmark::State &s) {
     {
       // While there are still rows to process...
       while (row < dim) {
-        // Only master thread calculates a pivot
-        #pragma omp master
+        // A single thread does the pivot calculations
+        #pragma omp single
         {
           // Get the value of the pivot
           auto pivot = m[row * dim + row];
@@ -40,9 +40,6 @@ static void baseline(benchmark::State &s) {
             m[row * dim + col] /= pivot;
           }
         }
-
-        // Wait for master thread to finish
-        #pragma omp barrier
 
         // Eliminate the pivot col from the remaining rows
         #pragma omp for
@@ -57,11 +54,8 @@ static void baseline(benchmark::State &s) {
         }
 
         // Update the row each iteration
-        #pragma omp master
+        #pragma omp single
         { row += 1; }
-
-        // Wait for the master thread to update the row
-        #pragma omp barrier
       }
     }
   }
