@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
   // Generate random numbers from rank 0
   if (task_id == 0) {
     // Allocate memory for send buffer
-    send_ptr = std::make_unique<int[]>(chunk_size);
+    send_ptr = std::make_unique<int[]>(num_elements);
 
     // Create random number generator
     std::random_device rd;
