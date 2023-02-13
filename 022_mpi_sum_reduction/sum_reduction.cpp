@@ -26,20 +26,20 @@ int main(int argc, char *argv[]) {
   MPI_Comm_rank(MPI_COMM_WORLD, &task_id);
 
   // Create buffer for send (only initialized in rank 0)
-  int *send_buffer;
+  std::unique_ptr<int[]> send_ptr;
 
   // Generate random numbers from rank 0
   if (task_id == 0) {
     // Allocate memory for send buffer
-    send_buffer = new int[1024];
+    send_ptr = std::make_unique<int[]>(chunk_size);
 
     // Create random number generator
     std::random_device rd;
     std::mt19937 mt(rd());
-    std::uniform_int_distribution dist(1, 10);
+    std::uniform_int_distribution dist(1, 1);
 
     // Create random data
-    std::generate(send_buffer, send_buffer + num_elements,
+    std::generate(send_ptr.get(), send_ptr.get() + num_elements,
                   [&] { return dist(mt); });
   }
 
@@ -47,8 +47,8 @@ int main(int argc, char *argv[]) {
   auto recv_buffer = std::make_unique<int[]>(chunk_size);
 
   // Perform the scatter of the data to different threads
-  MPI_Scatter(send_buffer, chunk_size, MPI_INT, recv_buffer.get(), chunk_size,
-              MPI_INT, 0, MPI_COMM_WORLD);
+  MPI_Scatter(send_ptr.get(), chunk_size, MPI_INT, recv_buffer.get(),
+              chunk_size, MPI_INT, 0, MPI_COMM_WORLD);
 
   // Calculate partial results in each thread
   auto local_result =
@@ -60,10 +60,8 @@ int main(int argc, char *argv[]) {
              MPI_COMM_WORLD);
 
   // Print the result from rank 0
-  // Free the allocated memory
   if (task_id == 0) {
     std::cout << global_result << '\n';
-    delete [] send_buffer;
   }
 
   // Finish our MPI work
