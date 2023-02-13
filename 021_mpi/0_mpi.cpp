@@ -1,10 +1,10 @@
 // An example parallel program using MPI
 // By: Nick from CoffeeBeforeArch
 
-#include "mpi.h"
-
 #include <iostream>
 #include <sstream>
+
+#include "mpi.h"
 
 int main(int argc, char *argv[]) {
   // Initialize MPI
