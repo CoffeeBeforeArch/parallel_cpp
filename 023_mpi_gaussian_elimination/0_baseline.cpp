@@ -5,6 +5,8 @@
 #include <iostream>
 #include <random>
 #include <vector>
+
+// Helper function to print the matrix
 void print_matrix(const float *matrix, int dim) {
   for (int i = 0; i < dim; i++) {
     for (int j = 0; j < dim; j++) {
@@ -45,6 +47,5 @@ int main() {
       }
     }
   }
-
   return 0;
 }
