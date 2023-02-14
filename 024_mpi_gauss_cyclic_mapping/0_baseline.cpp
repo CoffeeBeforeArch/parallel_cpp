@@ -2,11 +2,11 @@
 // By: Nick from CoffeeBeforeArch
 
 #include <algorithm>
+#include <iostream>
 #include <memory>
 #include <random>
 
 #include "mpi.h"
-#include <iostream>
 
 void print_matrix(const float *matrix, int dim) {
   for (int i = 0; i < dim; i++) {
@@ -61,8 +61,11 @@ int main(int argc, char *argv[]) {
   MPI_Scatter(matrix.get(), dim * n_rows, MPI_FLOAT, m_chunk.get(),
               dim * n_rows, MPI_FLOAT, 0, MPI_COMM_WORLD);
 
+  // Store requests that for non-blocking sends
+  std::vector<MPI_Request> requests(num_tasks);
+
   // Performance gaussian elimination
-  for (int row = 0; row < dim; row++) {
+  for (int row = 0; row < end_row; row++) {
     // See if this process is responsible for the pivot calculation
     auto mapped_rank = row / n_rows;
 
@@ -80,8 +83,10 @@ int main(int argc, char *argv[]) {
       }
 
       // Send the pivot row to the other processes
-      MPI_Bcast(m_chunk.get() + dim * local_row, dim, MPI_FLOAT, mapped_rank,
-                MPI_COMM_WORLD);
+      for (int i = mapped_rank + 1; i < num_tasks; i++) {
+        MPI_Isend(m_chunk.get() + dim * local_row, dim, MPI_FLOAT, i, 0,
+                  MPI_COMM_WORLD, &requests[i]);
+      }
 
       // Eliminate the for the local rows
       for (int elim_row = local_row + 1; elim_row < n_rows; elim_row++) {
@@ -94,20 +99,24 @@ int main(int argc, char *argv[]) {
               m_chunk[local_row * dim + col] * scale;
         }
       }
+
+      // Check if there are any outstanding messages
+      for (int i = mapped_rank + 1; i < num_tasks; i++) {
+        MPI_Wait(&requests[i], MPI_STATUS_IGNORE);
+      }
     } else {
       // Receive pivot row
-      MPI_Bcast(pivot_row.get(), dim, MPI_FLOAT, mapped_rank, MPI_COMM_WORLD);
+      MPI_Recv(pivot_row.get(), dim, MPI_FLOAT, mapped_rank, 0, MPI_COMM_WORLD,
+               MPI_STATUS_IGNORE);
 
       // Skip rows that have been fully processed
-      if (row < end_row) {
-        for (int elim_row = 0; elim_row < n_rows; elim_row++) {
-          // Get the scaling factor for elimination
-          auto scale = m_chunk[elim_row * dim + row];
+      for (int elim_row = 0; elim_row < n_rows; elim_row++) {
+        // Get the scaling factor for elimination
+        auto scale = m_chunk[elim_row * dim + row];
 
-          // Remove the pivot
-          for (int col = row; col < dim; col++) {
-            m_chunk[elim_row * dim + col] -= pivot_row[col] * scale;
-          }
+        // Remove the pivot
+        for (int col = row; col < dim; col++) {
+          m_chunk[elim_row * dim + col] -= pivot_row[col] * scale;
         }
       }
     }
