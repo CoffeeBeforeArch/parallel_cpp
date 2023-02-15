@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
 
   // Calculate the number of rows mapped to each process
   // Assumes this divides evenly
-  const int dim = 1 << 12;
+  const int dim = 1 << 4;
   const int n_rows = dim / num_tasks;
 
   // Get the task ID
@@ -119,6 +119,11 @@ int main(int argc, char *argv[]) {
     MPI_Gather(m_chunk.get() + i * dim, dim, MPI_FLOAT,
                matrix.get() + num_tasks * i * dim, dim, MPI_FLOAT, 0,
                MPI_COMM_WORLD);
+  }
+
+  // Print result from rank 0
+  if (task_id == 0) {
+    print_matrix(matrix.get(), dim);
   }
 
   // Finish our MPI work
