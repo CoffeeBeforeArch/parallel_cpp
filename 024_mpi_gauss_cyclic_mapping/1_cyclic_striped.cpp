@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
     // For every rank in the communicator
     for (int rank = 0; rank < num_tasks; rank++) {
       // Calculate the global column of the pivot
-      auto global_col = row * n_rows + rank;
+      auto global_col = row * num_tasks + rank;
 
       // If this row belongs to this rank...
       if (task_id == rank) {
