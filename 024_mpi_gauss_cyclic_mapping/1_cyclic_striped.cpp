@@ -62,51 +62,52 @@ int main(int argc, char *argv[]) {
                 m_chunk.get() + i * dim, dim, MPI_FLOAT, 0, MPI_COMM_WORLD);
   }
 
-  // Performance gaussian elimination
-  for (int row = 0; row < dim; row++) {
-    // See if this process is responsible for the pivot calculation
-    auto mapped_rank = row % num_tasks;
+  // Perform gaussian elimination
+  // For every row in the local matrix chunk...
+  for (int row = 0; row < n_rows; row++) {
+    // For every rank in the communicator
+    for (int rank = 0; rank < num_tasks; rank++) {
+      // Calculate the global column of the pivot
+      auto global_col = row * n_rows + rank;
 
-    // If the row is mapped to this rank...
-    if (task_id == mapped_rank) {
-      // Calculate the row in the local matrix
-      auto local_row = row / num_tasks;
-
-      // Get the value of the pivot
-      auto pivot = m_chunk[local_row * dim + row];
-
-      // Divide the rest of the row by the pivot
-      for (int col = row; col < dim; col++) {
-        m_chunk[local_row * dim + col] /= pivot;
-      }
-
-      // Send the pivot row to the other processes
-      MPI_Bcast(m_chunk.get() + dim * local_row, dim, MPI_FLOAT, mapped_rank,
-                MPI_COMM_WORLD);
-
-      // Eliminate the for the local rows
-      for (int elim_row = local_row + 1; elim_row < n_rows; elim_row++) {
-        // Get the scaling factor for elimination
-        auto scale = m_chunk[elim_row * dim + row];
-
-        // Remove the pivot
-        for (int col = row; col < dim; col++) {
-          m_chunk[elim_row * dim + col] -=
-              m_chunk[local_row * dim + col] * scale;
+      // If this row belongs to this rank...
+      if (task_id == rank) {
+        // Do the pivot calculation
+        auto pivot = m_chunk[row * dim + global_col];
+        for (int col = global_col; col < dim; col++) {
+          m_chunk[row * dim + col] /= pivot;
         }
-      }
-    } else {
-      // Receive pivot row
-      MPI_Bcast(pivot_row.get(), dim, MPI_FLOAT, mapped_rank, MPI_COMM_WORLD);
 
-      auto elim_start = row / num_tasks + (mapped_rank > task_id) * 1;
-      for (int elim_row = elim_start; elim_row < n_rows; elim_row++) {
-        // Get the scaling factor for elimination
-        auto scale = m_chunk[elim_row * dim + row];
+        // Send the pivot row to the other ranks
+        MPI_Bcast(m_chunk.get() + row * dim, dim, MPI_FLOAT, rank,
+                  MPI_COMM_WORLD);
 
-        // Remove the pivot
-        for (int col = row; col < dim; col++) {
-          m_chunk[elim_row * dim + col] -= pivot_row[col] * scale;
+        // Eliminate the for the local rows
+        for (int elim_row = row + 1; elim_row < n_rows; elim_row++) {
+          // Get the scaling factor for elimination
+          auto scale = m_chunk[elim_row * dim + global_col];
+
+          // Remove the pivot
+          for (int col = global_col; col < dim; col++) {
+            m_chunk[elim_row * dim + col] -= m_chunk[row * dim + col] * scale;
+          }
+        }
+      } else {
+        // Receive the pivot from the sending rank
+        MPI_Bcast(pivot_row.get(), dim, MPI_FLOAT, rank, MPI_COMM_WORLD);
+
+        // Get the starting position
+        auto local_start = (task_id < rank) ? row + 1 : row;
+
+        // Eliminate for the local rows
+        for (int elim_row = local_start; elim_row < n_rows; elim_row++) {
+          // Get the scaling factor for elimination
+          auto scale = m_chunk[elim_row * dim + global_col];
+
+          // Remove the pivot
+          for (int col = global_col; col < dim; col++) {
+            m_chunk[elim_row * dim + col] -= pivot_row[col] * scale;
+          }
         }
       }
     }
