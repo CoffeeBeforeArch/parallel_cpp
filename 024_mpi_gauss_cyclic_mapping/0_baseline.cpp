@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
 
   // Calculate the number of rows mapped to each process
   // Assumes this divides evenly
-  const int dim = 1 << 4;
+  const int dim = 1 << 10;
   const int n_rows = dim / num_tasks;
 
   // Get the task ID
@@ -55,6 +55,12 @@ int main(int argc, char *argv[]) {
     matrix = std::make_unique<float[]>(dim * dim);
     std::generate(matrix.get(), matrix.get() + dim * dim,
                   [&] { return dist(mt); });
+  }
+
+  // Collect start time in rank 0
+  double start;
+  if (task_id == 0) {
+    start = MPI_Wtime();
   }
 
   // Before doing anything, send parts of the matrix to each process
@@ -128,7 +134,9 @@ int main(int argc, char *argv[]) {
 
   // Print result from rank 0
   if (task_id == 0) {
-    print_matrix(matrix.get(), dim);
+    double end = MPI_Wtime();
+    std::cout << end - start << " Seconds!\n";
+    // print_matrix(matrix.get(), dim);
   }
 
   // Finish our MPI work
